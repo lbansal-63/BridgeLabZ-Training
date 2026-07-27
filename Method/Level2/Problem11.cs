@@ -3,7 +3,13 @@ public class Quad
 {
     public static double[] Roots(double a, double b, double c)
     {
-        double delta = Math.pow(b,2)-4*a*c
+        if (a == 0)
+        {
+            Console.WriteLine("Not a quadratic equation.");
+            return new double[0];
+        }
+
+        double delta = Math.Pow(b, 2) - 4 * a * c;
         if (delta > 0)
         {
             double root1 = (-b + Math.Sqrt(delta)) / (2 * a);
@@ -11,7 +17,7 @@ public class Quad
 
             return new double[] { root1, root2 };
         }
-        else if (d == 0)
+        else if (delta == 0)
         {
             double root = -b / (2 * a);
             return new double[] { root };
