@@ -28,6 +28,7 @@ public class Program
     {
         BookDetail b1 = new BookDetail("Rich Dad Poor Dad", "Robert Kiyosaki", 350);
         BookDetail b2 = new BookDetail("The art of not giving fuck","Mark Manson",300);
+        BookDetail b3 = new BookDetail("Heart of the leader", "XYZ", 300);
 
         b1.print();
         b2.print();
