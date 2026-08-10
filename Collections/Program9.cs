@@ -1,0 +1,19 @@
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        HashSet<int> set =
+            new HashSet<int> { 5, 3, 9, 1 };
+
+        List<int> list =
+            new List<int>(set);
+
+        list.Sort();
+
+        Console.WriteLine(
+            string.Join(", ", list));
+    }
+}
