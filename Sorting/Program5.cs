@@ -1,0 +1,32 @@
+using System;
+
+class Program
+{
+    static void SelectionSort(int[] scores)
+    {
+        for (int i = 0; i < scores.Length - 1; i++)
+        {
+            int minIndex = i;
+
+            for (int j = i + 1; j < scores.Length; j++)
+            {
+                if (scores[j] < scores[minIndex])
+                    minIndex = j;
+            }
+
+            int temp = scores[i];
+            scores[i] = scores[minIndex];
+            scores[minIndex] = temp;
+        }
+    }
+
+    static void Main()
+    {
+        int[] scores = { 78, 92, 65, 88, 70 };
+
+        SelectionSort(scores);
+
+        Console.WriteLine("Sorted Exam Scores:");
+        Console.WriteLine(string.Join(" ", scores));
+    }
+}
