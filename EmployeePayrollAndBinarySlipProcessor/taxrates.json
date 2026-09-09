@@ -1,0 +1,4 @@
+
+{
+  "grades": [{ "grade": "A", "taxPercent": 25 },{ "grade": "B", "taxPercent": 18 },{ "grade": "C", "taxPercent": 10 }]
+}

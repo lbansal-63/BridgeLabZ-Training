@@ -1,0 +1,8 @@
+[09-09-2026 12:13:37] Processing Started.
+[09-09-2026 12:13:37] SUCCESS: Processed E01 - Anita Rao
+[09-09-2026 12:13:37] SUCCESS: Processed E02 - Vikram Singh
+[09-09-2026 12:13:37] SUCCESS: Processed EO3 - Deepa Nair
+[09-09-2026 12:13:37] REJECTED (E04): Unknown grade encountered: 'Z'
+[09-09-2026 12:13:37] REJECTED (E05): Unknown grade encountered: 'Y'
+[09-09-2026 12:13:37] SUCCESS: Processed E06 - Farhan Ali
+[09-09-2026 12:13:37] Processing Completed. Valid: 4, Failed: 2
