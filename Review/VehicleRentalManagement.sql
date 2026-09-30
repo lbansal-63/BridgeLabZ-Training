@@ -130,7 +130,7 @@ VALUES
 (2, '2026-08-25', 'Brake inspection', 2000);
 
 
-
+-- JOIN Display complete rental information
 SELECT  
     r.rentalId, 
     c.firstName || ' ' || c.lastName AS customerName, 
@@ -147,7 +147,7 @@ JOIN vehicles v
 JOIN vehicle_types vt 
     ON v.vehicleType_id = vt.vehicleId;
 
-
+-- CTE Identify most rented vehicle types
 WITH rentalCounts AS ( 
     SELECT  
         vt.typeName, 
@@ -164,16 +164,7 @@ FROM rentalCounts
 ORDER BY rentalCount DESC;
 
 
-SELECT
-    c.customerId,
-    c.firstName,
-    SUM(r.totalAmount) AS totalSpending
-FROM customers c
-JOIN rentals r
-    ON c.customerId = r.customerId
-GROUP BY c.customerId, c.firstName;
-
-
+ -- SUBQUERY Customers whose spending is above average spending
 SELECT
     c.customerId,
     c.firstName,
@@ -195,6 +186,7 @@ HAVING SUM(r.totalAmount) >
     ) AS spending
 );
 
+-- TEMPORARY TABLE Currently rented vehicles
 CREATE TEMP TABLE currentlyRentedVehicles AS
 SELECT
     v.vehicleId,
@@ -211,7 +203,7 @@ JOIN customers c
 WHERE r.returnDate IS NULL;
 SELECT * FROM currentlyRentedVehicles;
 
-
+-- VIEW Available vehicles
 CREATE VIEW available_vehicles AS
 SELECT
     v.vehicleId,
@@ -226,5 +218,81 @@ JOIN vehicle_types vt
 WHERE v.status = 'AVAILABLE';
 SELECT * FROM available_vehicles;
 
+-- UDF Calculate rental charges
+CREATE OR REPLACE FUNCTION rental.calculate_rental_charge
+(
+    p_daily_rate NUMERIC,
+    p_rental_days INT
+)
+RETURNS NUMERIC
+AS $$
+BEGIN
+
+    IF p_rental_days <= 0 THEN
+        RAISE EXCEPTION
+        'Rental days must be greater than 0';
+    END IF;
+
+    RETURN p_daily_rate * p_rental_days;
+
+END;
+$$ LANGUAGE plpgsql;
 
 
+-- TRIGGER FUNCTION - Prevent booking of already rented/maintenance vehicle
+CREATE OR REPLACE FUNCTION rental.check_vehicle_availability()
+RETURNS TRIGGER
+AS $$
+DECLARE
+    vehicle_status VARCHAR(20);
+BEGIN
+
+    SELECT status
+    INTO vehicle_status
+    FROM rental.vehicles
+    WHERE vehicleId = NEW.vehicleId;
+
+    IF vehicle_status IS NULL THEN
+
+        RAISE EXCEPTION
+        'Vehicle % does not exist',
+        NEW.vehicleId;
+
+    END IF;
+
+    IF vehicle_status = 'RENTED' THEN
+        RAISE EXCEPTION
+        'Vehicle % is already rented and cannot be booked',
+        NEW.vehicleId;
+    END IF;
+
+    IF vehicle_status = 'MAINTENANCE' THEN
+		 RAISE EXCEPTION
+        'Vehicle % is under maintenance and cannot be booked',
+        NEW.vehicleId;
+    END IF;
+	
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- create trigger
+CREATE TRIGGER prevent_rented_vehicle_booking
+BEFORE INSERT ON rental.rentals
+FOR EACH ROW
+EXECUTE FUNCTION rental.check_vehicle_availability();
+
+-- INDEXES
+CREATE INDEX idx_vehicle_registration
+ON rental.vehicles(registrationNo);
+
+/* Customer ID */
+CREATE INDEX idx_rental_customer ON rental.rentals(customerId);
+
+/* Rental date */
+CREATE INDEX idx_rental_date ON rental.rentals(rentalDate);
+
+/* Check indexes */
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE schemaname = 'rental';
