@@ -282,6 +282,52 @@ BEFORE INSERT ON rental.rentals
 FOR EACH ROW
 EXECUTE FUNCTION rental.check_vehicle_availability();
 
+-- cursor
+CREATE OR REPLACE FUNCTION rental.calculate_pending_payments()
+RETURNS TABLE
+(
+    rental_id INT,
+    total_amount NUMERIC,
+    paid_amount NUMERIC,
+    pending_amount NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    rental_cursor CURSOR FOR
+        SELECT
+            r.rentalId,
+            r.totalAmount
+        FROM rental.rentals r;
+
+    v_rental_id INT;
+    v_total_amount NUMERIC;
+    v_paid_amount NUMERIC;
+
+BEGIN
+    OPEN rental_cursor;
+    LOOP
+        FETCH rental_cursor
+        INTO v_rental_id, v_total_amount;
+
+        EXIT WHEN NOT FOUND;
+
+        SELECT COALESCE(SUM(p.amount), 0) INTO v_paid_amount
+		FROM rental.payments p
+		WHERE p.rentalId = v_rental_id;
+
+        rental_id := v_rental_id;
+        total_amount := v_total_amount;
+        paid_amount := v_paid_amount;
+        pending_amount :=
+            v_total_amount - v_paid_amount;
+
+        RETURN NEXT;
+    END LOOP;
+    CLOSE rental_cursor;
+END;
+$$;
+
 -- INDEXES
 CREATE INDEX idx_vehicle_registration
 ON rental.vehicles(registrationNo);
@@ -296,3 +342,5 @@ CREATE INDEX idx_rental_date ON rental.rentals(rentalDate);
 SELECT indexname, indexdef
 FROM pg_indexes
 WHERE schemaname = 'rental';
+
+
